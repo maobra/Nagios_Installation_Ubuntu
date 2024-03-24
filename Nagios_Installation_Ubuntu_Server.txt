@@ -5,7 +5,7 @@ sudo apt-get update
 sudo apt-get install -y autoconf gcc libc6 make wget unzip apache2 libgd-dev openssl libssl-dev
 sudo apt-get install -y openssl libssl-dev
 
-**PHP Installation** 
+**PHP Installation** "I'm using PHP7.2 for pdf generation report"
 sudo apt-get update
 sudo add-apt-repository ppa:ondrej/php
 sudo apt-get install -y php7.2
