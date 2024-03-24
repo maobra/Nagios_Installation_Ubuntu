@@ -2,4 +2,4 @@
 
 **1. INSTALL NAGIOS 4.5.1 on UBUNTU 22.04**
 
-https://github.com/steptechmaster/Nagios/blob/main/Nagios_Installation_Ubuntu_Server.txt
+https://github.com/steptechmaster/Nagios/blob/main/INSTALL_NAGIOS_UBUNTU_22.txt
