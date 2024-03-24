@@ -1,4 +1,4 @@
-# Install Nagios 4.5.1 on Ubuntu 22.04
+#INSTALL NAGIOS 4.5.1 on UBUNTU 22.04
 
 **Prerequisites**
 sudo apt-get update
