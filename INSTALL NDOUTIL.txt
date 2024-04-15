@@ -1,0 +1,101 @@
+INSTALL NDOUTIL
+
+a- install mariadb 
+
+sudo apt update
+sudo apt install -y mariadb-server
+sudo systemctl start mariadb.service
+sudo mysql_secure_installation
+	Enter current password for root - enter for none
+	Set root password - N
+	Remove anonymous users? - Y
+	Disallow root login remotely? -Y
+	Remove test database and access to it? - Y
+	Reload privilege tables now? - Y
+
+#####Creating mysql admin access
+sudo mariadb
+GRANT ALL ON *.* TO 'admin'@'localhost' IDENTIFIED BY 'password' WITH GRANT OPTION;
+FLUSH PRIVILEGES;
+exit
+	
+#####Testing & Checking of version
+sudo systemctl status mariadb
+sudo mysqladmin version
+mysqladmin -u admin -p version
+
+
+#####Prerequisites
+sudo apt-get update
+sudo apt-get install -y libmysqlclient-dev libdbd-mysql-perl
+
+#####Creating database and user for nagios ndoutils
+sudo mariadb
+CREATE DATABASE nagios DEFAULT CHARACTER SET utf8 COLLATE utf8_general_ci;
+CREATE USER 'ndoutils'@'localhost' IDENTIFIED BY 'ndoutils_password';
+GRANT USAGE ON *.* TO 'ndoutils'@'localhost' IDENTIFIED BY 'ndoutils_password' WITH MAX_QUERIES_PER_HOUR 0 MAX_CONNECTIONS_PER_HOUR 0 MAX_UPDATES_PER_HOUR 0 MAX_USER_CONNECTIONS 0 ; 
+GRANT ALL PRIVILEGES ON nagios.* TO 'ndoutils'@'localhost' WITH GRANT OPTION ; 
+\q
+
+echo 'show databases;' | mysql -u ndoutils -p'ndoutils_password' -h localhost
+
+
+#####Linux Kernel Settings
+sudo cp /etc/sysctl.conf /etc/sysctl.conf_backup
+sudo sed -i '/msgmnb/d' /etc/sysctl.conf
+sudo sed -i '/msgmax/d' /etc/sysctl.conf
+sudo sed -i '/shmmax/d' /etc/sysctl.conf
+sudo sed -i '/shmall/d' /etc/sysctl.conf
+sudo sh -c 'printf "\n\nkernel.msgmnb = 131072000\n" >> /etc/sysctl.conf'
+sudo sh -c 'printf "kernel.msgmax = 131072000\n" >> /etc/sysctl.conf'
+sudo sh -c 'printf "kernel.shmmax = 4294967295\n" >> /etc/sysctl.conf'
+sudo sh -c 'printf "kernel.shmall = 268435456\n" >> /etc/sysctl.conf'
+sudo sysctl -e -p /etc/sysctl.conf
+
+
+#####Downloading NDOUtils Source
+cd /tmp
+wget -O ndoutils.tar.gz https://github.com/NagiosEnterprises/ndoutils/archive/ndoutils-2.1.3.tar.gz
+tar xzf ndoutils.tar.gz
+cd /tmp/ndoutils-ndoutils-2.1.3/
+sudo ./configure
+sudo make all
+sudo make install
+cd db/
+sudo ./installdb -u 'ndoutils' -p 'ndoutils_password' -h 'localhost' -d nagios
+cd .. 
+sudo make install-config
+sudo mv /usr/local/nagios/etc/ndo2db.cfg-sample /usr/local/nagios/etc/ndo2db.cfg
+sudo sh -c 'sed -i 's/^db_user=.*/db_user=ndoutils/g' /usr/local/nagios/etc/ndo2db.cfg'
+sudo sh -c 'sed -i 's/^db_pass=.*/db_pass=ndoutils_password/g' /usr/local/nagios/etc/ndo2db.cfg'
+sudo mv /usr/local/nagios/etc/ndomod.cfg-sample /usr/local/nagios/etc/ndomod.cfg
+sudo make install-init
+sudo systemctl enable ndo2db.service 
+sudo systemctl start ndo2db.service
+
+#####Update Nagios To Use NDO Broker Module
+sudo sh -c 'printf "\n\n# NDOUtils Broker Module\n" >> /usr/local/nagios/etc/nagios.cfg'
+sudo sh -c 'printf "broker_module=/usr/local/nagios/bin/ndomod.o config_file=/usr/local/nagios/etc/ndomod.cfg\n" >> /usr/local/nagios/etc/nagios.cfg'
+
+
+sudo systemctl restart nagios.service
+sudo systemctl status nagios.service
+grep ndo /usr/local/nagios/var/nagios.log
+echo 'select * from nagios.nagios_logentries;' | mysql -u ndoutils -p'ndoutils_password'
+
+sudo systemctl start ndo2db.service
+sudo systemctl stop ndo2db.service
+sudo systemctl restart ndo2db.service
+sudo systemctl status ndo2db.service
+-----
+
+Backend ID	ndoutils
+Backend Type	ndomy
+dbhost	        localhost
+dbport	        3306
+dbname	        nagios
+dbuser	        ndoutils
+dbpass	        ndoutils_password
+dbprefix	nagios_
+dbinstancename	default
+maxtimewithoutupdate	180
