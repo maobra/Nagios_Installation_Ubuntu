@@ -5,3 +5,5 @@
 https://github.com/steptechmaster/Nagios/blob/main/INSTALL_NAGIOS_UBUNTU.txt
 
 **2. INSTALL PNP4**
+
+https://github.com/steptechmaster/Nagios/blob/main/PNP4%20Installation.txt
