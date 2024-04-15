@@ -9,3 +9,7 @@ https://github.com/steptechmaster/Nagios/blob/main/INSTALL_NAGIOS_UBUNTU.txt
 https://github.com/steptechmaster/Nagios/blob/main/INSTALL_PNP4.txt
 
 **3. INSTALL NAGVIS**
+
+https://github.com/steptechmaster/Nagios/blob/main/INSTALL_NAGVIS.txt
+
+**4. INSTALL NDOUTILS**
