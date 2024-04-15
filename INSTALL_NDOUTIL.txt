@@ -1,6 +1,6 @@
-INSTALL NDOUTIL
+#INSTALL NDOUTIL
 
-a- install mariadb 
+**install mariadb**
 
 sudo apt update
 sudo apt install -y mariadb-server
@@ -13,23 +13,23 @@ sudo mysql_secure_installation
 	Remove test database and access to it? - Y
 	Reload privilege tables now? - Y
 
-#####Creating mysql admin access
+**Creating mysql admin access**
 sudo mariadb
 GRANT ALL ON *.* TO 'admin'@'localhost' IDENTIFIED BY 'password' WITH GRANT OPTION;
 FLUSH PRIVILEGES;
 exit
 	
-#####Testing & Checking of version
+**Testing & Checking of version**
 sudo systemctl status mariadb
 sudo mysqladmin version
 mysqladmin -u admin -p version
 
 
-#####Prerequisites
+**Prerequisites**
 sudo apt-get update
 sudo apt-get install -y libmysqlclient-dev libdbd-mysql-perl
 
-#####Creating database and user for nagios ndoutils
+**Creating database and user for nagios ndoutils**
 sudo mariadb
 CREATE DATABASE nagios DEFAULT CHARACTER SET utf8 COLLATE utf8_general_ci;
 CREATE USER 'ndoutils'@'localhost' IDENTIFIED BY 'ndoutils_password';
@@ -40,7 +40,7 @@ GRANT ALL PRIVILEGES ON nagios.* TO 'ndoutils'@'localhost' WITH GRANT OPTION ;
 echo 'show databases;' | mysql -u ndoutils -p'ndoutils_password' -h localhost
 
 
-#####Linux Kernel Settings
+**Linux Kernel Settings**
 sudo cp /etc/sysctl.conf /etc/sysctl.conf_backup
 sudo sed -i '/msgmnb/d' /etc/sysctl.conf
 sudo sed -i '/msgmax/d' /etc/sysctl.conf
@@ -53,10 +53,12 @@ sudo sh -c 'printf "kernel.shmall = 268435456\n" >> /etc/sysctl.conf'
 sudo sysctl -e -p /etc/sysctl.conf
 
 
-#####Downloading NDOUtils Source
+**Downloading NDOUtils Source**
 cd /tmp
 wget -O ndoutils.tar.gz https://github.com/NagiosEnterprises/ndoutils/archive/ndoutils-2.1.3.tar.gz
 tar xzf ndoutils.tar.gz
+
+**Compile & Install**
 cd /tmp/ndoutils-ndoutils-2.1.3/
 sudo ./configure
 sudo make all
@@ -73,22 +75,23 @@ sudo make install-init
 sudo systemctl enable ndo2db.service 
 sudo systemctl start ndo2db.service
 
-#####Update Nagios To Use NDO Broker Module
+**Update Nagios To Use NDO Broker Module**
 sudo sh -c 'printf "\n\n# NDOUtils Broker Module\n" >> /usr/local/nagios/etc/nagios.cfg'
 sudo sh -c 'printf "broker_module=/usr/local/nagios/bin/ndomod.o config_file=/usr/local/nagios/etc/ndomod.cfg\n" >> /usr/local/nagios/etc/nagios.cfg'
 
-
+**Restart Nagios & Check Logs**
 sudo systemctl restart nagios.service
 sudo systemctl status nagios.service
 grep ndo /usr/local/nagios/var/nagios.log
 echo 'select * from nagios.nagios_logentries;' | mysql -u ndoutils -p'ndoutils_password'
 
+**Restart NDO2DB services**
 sudo systemctl start ndo2db.service
 sudo systemctl stop ndo2db.service
 sudo systemctl restart ndo2db.service
 sudo systemctl status ndo2db.service
------
 
+**Nagvis NDO2DB Backend**
 Backend ID	ndoutils
 Backend Type	ndomy
 dbhost	        localhost
