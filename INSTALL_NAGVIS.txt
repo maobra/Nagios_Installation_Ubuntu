@@ -1,0 +1,11 @@
+Ubuntu Nagvis - must install php 7.2
+
+sudo apt install -y php7.2-pdo  php7.2-fpm php7.2-json rsync gcc g++  php7.2-mysqlnd php7.2-gd php7.2-xml php7.2-mbstring graphviz sqlite3 php7.2-sqlite3
+
+cd /tmp
+wget -O nagvis.tar.gz https://www.nagvis.org/share/nagvis-1.9.35.tar.gz
+tar xzf nagvis.tar.gz
+cd /tmp/nagvis-1.9.35
+./install.sh
+mv /etc/apache2/conf-available/nagvis.conf /etc/apache2/sites-enabled/
+sudo systemctl restart apache2
